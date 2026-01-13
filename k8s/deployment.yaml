@@ -7,7 +7,7 @@ spec:
   selector:
     matchLabels:
       app: uptime-kuma
-  replicas: 1
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -18,12 +18,16 @@ spec:
       labels:
         app: uptime-kuma
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000 # or another non-root UID
+        fsGroup: 1000
       containers:
       - name: uptime-kuma
         image: louislam/uptime-kuma:2
         imagePullPolicy: IfNotPresent
-        # env:
-        # # only need to set PUID and PGUI because of NFS server
+        env: # # only need to set PUID and PGUI because of NFS server
+
         # - name: PUID
         #   value: "1000"
         # - name: PGID
@@ -33,7 +37,7 @@ spec:
           name: web-ui
         resources:
           limits:
-            cpu: 200m
+            cpu: 500m
             memory: 512Mi
           requests:
             cpu: 50m
