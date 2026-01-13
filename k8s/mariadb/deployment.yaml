@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+  namespace: uptime-kuma
+spec:
+  selector:
+    matchLabels:
+      app: mariadb
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: mariadb:12
+        imagePullPolicy: IfNotPresent
+        # env:
+        # - name: MYSQL_ROOT_PASSWORD
+        #   value: "changeme123"
+        # - name: MYSQL_DATABASE
+        #   value: "uptimekuma"
+        # - name: MYSQL_USER
+        #   value: "myuser"
+        # - name: MYSQL_PASSWORD
+        #   value: "mypassword"
+        # - name: PUID
+        #   value: "1000"
+        # - name: PGID
+        #   value: "1000"
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mariadb-data
+          mountPath: /var/lib/mysql
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        livenessProbe:
+          tcpSocket:
+            port: mysql
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        # readinessProbe:
+        #   exec:
+        #     command:
+        #     - /bin/sh
+        #     - -c
+        #     - mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD
+        #   initialDelaySeconds: 20
+        #   periodSeconds: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsUser: 999
+          runAsGroup: 999
+          seccompProfile:
+            type: "RuntimeDefault"
+          runAsNonRoot: true
+          capabilities:
+            drop:
+            - "ALL"
+      volumes:
+      - name: mariadb-data
+        persistentVolumeClaim:
+          claimName: mariadb-pvc
