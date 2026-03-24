@@ -3,6 +3,12 @@ kind: Deployment
 metadata:
   name: uptime-kuma
   namespace: uptime-kuma
+  annotations:
+    keel.sh/approvals: '1'
+    keel.sh/match-tag: 'true'
+    keel.sh/policy: force
+    keel.sh/pollSchedule: '@every 10m'
+    keel.sh/trigger: poll
 spec:
   selector:
     matchLabels:
